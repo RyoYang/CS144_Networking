@@ -1,8 +1,8 @@
 #ifndef SPONGE_LIBSPONGE_BYTE_STREAM_HH
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
+#include <deque>
 #include <string>
-
 //! \brief An in-order byte stream.
 
 //! Bytes are written on the "input" side and read from the "output"
@@ -12,6 +12,13 @@ class ByteStream {
   private:
     // Your code here -- add private members as necessary.
 
+    // size_t MAX_CAPACITY;
+    size_t RESIDENCE_CAPACITY = 0;
+
+    size_t _byte_write = 0;
+    size_t _byte_read = 0;
+    bool _is_end = false;
+    std::deque<char> buf = {}; 
     // Hint: This doesn't need to be a sophisticated data structure at
     // all, but if any of your tests are taking longer than a second,
     // that's a sign that you probably want to keep exploring
