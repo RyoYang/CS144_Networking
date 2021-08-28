@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <set>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
@@ -14,6 +15,27 @@ class StreamReassembler {
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+    size_t _first_unread = 0;
+    size_t _first_unassembled = 0;
+    size_t _first_unacceptable = 0;
+    struct _segment
+    {
+      size_t index = 0;
+      size_t length = 0;
+      std::string str = "";
+      bool operator<(const _segment a) const
+      {
+        return index < a.index;
+      }
+    };
+
+    std::set<_segment> _buffer = {};
+    bool _eof = false;
+    void _add_new_seg(_segment &seg, const bool eof);
+    void _handle_overlap(_segment &seg);
+    void _stitch_output();
+    void _stitch_one_seg(const _segment &seg);
+    void _merge_seg(_segment &seg_a, const _segment &seg_b);
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
@@ -30,7 +52,6 @@ class StreamReassembler {
     //! \param index indicates the index (place in sequence) of the first byte in `data`
     //! \param eof the last byte of `data` will be the last byte in the entire stream
     void push_substring(const std::string &data, const uint64_t index, const bool eof);
-
     //! \name Access the reassembled byte stream
     //!@{
     const ByteStream &stream_out() const { return _output; }
